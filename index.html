@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://rawgit.com/digidem/leaflet-side-by-side/gh-pages/leaflet-side-by-side.js"></script>
+    <script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <link rel="stylesheet" href="https://rawgit.com/digidem/leaflet-side-by-side/gh-pages/layout.css">
+    <link rel="stylesheet" href="https://rawgit.com/digidem/leaflet-side-by-side/gh-pages/range.css">
+    <style>
+      .label {
+        font-size:13px;
+      }
+    </style>
+		<script>
+			$( document ).ready(function() {
+        var access_token='88ca289f-dd42-422e-8e82-266552a11aaf'
+        var user_id='wildfire@terravion.com'
+        var tubbsEpoch=1507843944 // 10/12/2017
+        var atlasEpoch=1507839085 // 10/12/2017
+        
+        var mymap = L.map('map', { zoomControl:false }).setView([38.275392, -122.192840], 18);
+        var layersControlLeft = L.control.layers(null, null, {collapsed:false});
+        var layersControlRight = L.control.layers(null, null, {collapsed:false});
+        var layerList = [];
+        var layerInfoList = [];
+        var mapbox_Layer= L.tileLayer("https://api.tiles.mapbox.com/v2/cgwright.ca5740e5/{z}/{x}/{y}.jpg",{
+            drawControl: false,
+            maxZoom: 22,
+            maxNativeZoom: 19
+        }).addTo(mymap);
+        var terravionRGBLayer=L.tileLayer('https://api.terravion.com/v1/users/'+user_id+'/layers/tiles/{z}/{x}/{y}.png?epochStart='+(tubbsEpoch-24*60*60)+'&epochEnd='+(tubbsEpoch+24*60*60)+'&product=NC&access_token='+access_token, {
+            attribution: 'TerrAvion',
+            maxZoom: 19,
+            tms: true
+        }).addTo(mymap);
+        layerInfoList.push({id: 'terravionRGB', name:'TerrAvion Color 10/12/2017', layer: terravionRGBLayer});
+        var terravionThermLayer=L.tileLayer('https://api.terravion.com/v1/users/'+user_id+'/layers/tiles/{z}/{x}/{y}.png?epochStart='+(tubbsEpoch-24*60*60)+'&epochEnd='+(tubbsEpoch+24*60*60)+'&product=TIRS&colorMap=T&access_token='+access_token, {
+            attribution: 'TerrAvion',
+            maxZoom: 19,
+            tms: true
+        })
+        layerInfoList.push({id: 'terravionThermal', name:'TerrAvion Thermal 10/12/2017', layer: terravionThermLayer});
+        // Napa Planet 80cm
+        // Santa Rosa Planet 3m
+        var planetSantaRosaRGBLayer=L.tileLayer('http://ec2-52-34-205-209.us-west-2.compute.amazonaws.com:8080/tiles/planet/SantaRosa_20171013_1036_rgb/{z}/{x}/{y}.png', {
+            attribution: 'Planet',
+            maxZoom: 16,
+            tms: true
+        })// .addTo(mymap);
+        layerInfoList.push({id: 'planetSantaRosa', name:'Planet Santa Rosa 10/13/2017', layer: planetSantaRosaRGBLayer});
+
+        var planetNapaRGBLayer=L.tileLayer('http://ec2-52-34-205-209.us-west-2.compute.amazonaws.com:8080/tiles/planet/napa_s01_20171010T194945_rgb_geo/{z}/{x}/{y}.png', {
+            attribution: 'Planet',
+            maxZoom: 18,
+            tms: true
+        }).addTo(mymap);
+        layerInfoList.push({id: 'planetNapa', name:'Planet Napa 10/10/2017', layer: planetNapaRGBLayer});
+        
+        var dgLayer=L.tileLayer('http://ec2-52-34-205-209.us-west-2.compute.amazonaws.com:8080/tiles/dg/post-event/2017-10-11/0221210/{z}/{x}/{y}.png', {
+            attribution: 'Digital Globe 50cm',
+            maxZoom: 19,
+            tms: true
+        })//.addTo(mymap);
+        layerInfoList.push({id: 'dg', name:'Digital Globe 10/11/2017', layer: dgLayer});
+        for(var i=0; i< layerInfoList.length;i++){
+          var layerInfo = layerInfoList[i];
+          //layersControlLeft.addBaseLayer(layerInfo.layer, layerInfo.name)
+          //layersControlRight.addBaseLayer(layerInfo.layer, layerInfo.name)
+          layerList.push(layerInfo.layer);
+        }
+
+        /*layersControlLeft.addTo(mymap)
+        layersControlRight.addTo(mymap)
+        layersControlLeft.setPosition('topleft')
+        layersControlLeft.expand()
+        layersControlRight.expand()*/        
+        
+
+        var sideBySideContol = L.control.sideBySide(terravionRGBLayer, planetNapaRGBLayer).addTo(mymap);
+        /*
+        $( "#terravionRGBLeft" ).click(function() {
+          terravionRGBLayer.addTo(mymap);
+          sideBySideContol.setLeftLayers(terravionRGBLayer);
+        });
+        $( "#terravionRGBRight" ).click(function() {          
+          terravionRGBLayer.addTo(mymap);
+          sideBySideContol.setRightLayers(terravionRGBLayer);
+        });*/
+
+        $( "#santaRosa" ).click(function() {
+          mymap.setView([38.273215, -122.200879],13)
+        });
+        $( "#napa" ).click(function() {
+          mymap.setView([38.273215, -122.200879],13)
+        });
+
+			})
+	  </script>
+	</head>
+	<body>
+    <div id='leftLayer' style='display:none'></div>
+    <div id='rightLayer' style='display:none'></div>
+    <div class='row'>
+      <div class='col-xl-2'>
+        Locations:
+      </div>
+      <div class='col-xl-2'>
+        <div id='napa'>Napa</div>
+      </div>
+      <div class='col-xl-2'>
+        <div id='santaRosa'>Santa Rosa</div>
+      </div>
+      <div class='col-xl-2'>
+        Santa Rosa
+      </div>
+    </div>
+    <div class='row'>
+      <div id='left_select' class='col-xl-3'>
+        <div class='label' id='terravionRGBLeft'>TerrAvion RGB 10/12/2017</div>
+        <div class='label' id='terravionThermalLeft'>TerrAvion Thermal 10/12/2017</div>
+        <div class='label' id='planetLeft'>Planet 10/10/2017</div>
+        <div class='label' id='dgLeft'>Digital Globe</div>  
+      </div>
+    
+      <div class='col-xl-6'>
+        <div id="map" style="height:800px;width:100%"></div>        
+      </div>
+      <div id='right_select' class='col-xl-3'>
+        <div class='label' id='terravionRGBRight'>TerrAvion RGB 10/12/2017</div>
+        <div class='label' id='terravionThermalRight'>TerrAvion Thermal 10/12/2017</div>
+        <div class='label' id='planetRight'>Planet 10/10/2017</div>
+        <div class='label' id='dgRight'>Digital Globe</div>  
+      </div>
+    </div>
+  </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+      integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+      crossorigin="anonymous">
+    </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
+      integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+      crossorigin="anonymous">
+    </script>
+</html>
